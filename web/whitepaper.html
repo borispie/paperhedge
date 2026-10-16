@@ -1,0 +1,178 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>PaperHedge · 白皮书 / Whitepaper</title>
+<meta name="description" content="PaperHedge：对冲挖 Papertrade PAPER 的原理、成本、费用、安全与风险。Hedged PAPER farming on Papertrade: how it works, economics, fees, security, risks.">
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=Noto+Sans+SC:wght@400;500;700&display=swap" rel="stylesheet">
+<style>
+  :root{--paper:#f6f2ea;--card:#fffdf9;--line:#e5ddcf;--ink:#1c1a17;--ink-2:#6f685d;--green:#1a7f4b;--red:#c33a1f;--link:#2b5fb3;--mono:'IBM Plex Mono',ui-monospace,Menlo,monospace;--sans:'Noto Sans SC',system-ui,sans-serif}
+  @media (prefers-color-scheme: dark){:root:not([data-theme="light"]){--paper:#17150f;--card:#1f1c15;--line:#36302a;--ink:#efe9dd;--ink-2:#a69d8f;--green:#4fbf7f;--red:#ef6a4e;--link:#8fb3f0}}
+  :root[data-theme="dark"]{--paper:#17150f;--card:#1f1c15;--line:#36302a;--ink:#efe9dd;--ink-2:#a69d8f;--green:#4fbf7f;--red:#ef6a4e;--link:#8fb3f0}
+  body{margin:0;background:var(--paper);color:var(--ink);font-family:var(--sans);font-size:15px;line-height:1.75}
+  main{max-width:720px;margin:0 auto;padding:28px 16px 80px}
+  .bar{display:flex;justify-content:space-between;align-items:center;gap:12px;font-size:13px;color:var(--ink-2);margin-bottom:24px}
+  .lang{display:flex;border:1px solid var(--line);border-radius:20px;overflow:hidden}
+  .lang button{border:0;background:transparent;color:var(--ink-2);padding:5px 12px;font:inherit;font-size:13px;cursor:pointer}
+  .lang button[aria-pressed=true]{background:var(--ink);color:var(--paper)}
+  h1{font-size:28px;margin:0 0 4px;letter-spacing:-.01em}
+  .v{color:var(--ink-2);font-size:13px;margin-bottom:28px}
+  h2{font-size:17px;margin:30px 0 8px;padding-top:14px;border-top:1px solid var(--line)}
+  p,li{color:var(--ink)}
+  code,.f{font-family:var(--mono);font-size:13px}
+  .f{display:block;background:var(--card);border:1px solid var(--line);border-radius:8px;padding:10px 12px;margin:8px 0;overflow-x:auto;white-space:pre}
+  table{width:100%;border-collapse:collapse;font-size:14px;margin:8px 0}
+  th,td{text-align:left;padding:7px 8px 7px 0;border-bottom:1px solid var(--line);vertical-align:top}
+  th{color:var(--ink-2);font-weight:500;font-size:13px}
+  td.n,th.n{text-align:right;font-family:var(--mono)}
+  a{color:var(--link)}
+  .ok{color:var(--green)}.no{color:var(--red)}
+  [hidden]{display:none !important}
+</style>
+</head>
+<body><main>
+<div class="bar"><a href="/">← PaperHedge</a><div class="lang" role="group" aria-label="language"><button id="zh" aria-pressed="true">中文</button><button id="en" aria-pressed="false">English</button></div></div>
+
+<article id="doc-zh">
+<h1>PaperHedge 白皮书</h1>
+<div class="v">v1 · 2026 年 10 月 · 开源 · paperhedge.xyz</div>
+
+<h2>1. 一句话</h2>
+<p>PaperHedge 是一个托管工具：在 Papertrade 上同时开多和空，让亏损那一腿铸 PAPER，赢的那一腿把钱赚回来，用大约 1/6 的成本拿到同样多的 PAPER。服务器 24 小时执行，你只授权开平仓、只放愿意烧掉的钱。</p>
+
+<h2>2. PAPER 是什么</h2>
+<p>Papertrade 是 HyperEVM 上的合成永续合约交易所：交易者和一个资金池（LP）对赌。交易者每亏 1 美元，协议按当前"铸币率"铸出 PAPER 给他。PAPER 不能转账，质押后按比例分平台手续费（USDC）。</p>
+<p>铸币率不是固定的：池子低于 200 万美元时每美元铸 100 枚；超过后按尾部进度衰减——10 月 13 日 23 枚，10 月 15 日已降到 14 枚。越早挖越便宜。</p>
+
+<h2>3. 为什么对冲便宜</h2>
+<p>同一个账户里同时开等量的多和空。价格走到 ±x% 时两腿一起平：</p>
+<ul>
+  <li>亏的那腿：亏 <code>名义 × x</code>，全额铸 PAPER（协议扣 2% 后作为铸币基数）。</li>
+  <li>赢的那腿：赢 <code>名义 × x</code>，但协议会对盈利收一笔"冲击费"（haircut）再加 2% 手续费。</li>
+</ul>
+<p>净花的只是那笔冲击费和手续费。冲击费的公式来自 Papertrade 文档：</p>
+<span class="f">scale = (1 − 0.10) / (1 + 1/(x·15000) + 100000/(1e6·x·M))
+M = 814.6 (BTC) / 484.0 (ETH)
+赢家实收 = 名义·x·scale·0.98</span>
+<p>按 BTC 算，不同走动幅度下赢家能留住的比例：</p>
+<table><tr><th>走动 x</th><th class="n">赢家留住</th><th class="n">净花 / 亏损额</th><th class="n">每 1000 PAPER（铸币率 14）</th></tr>
+<tr><td>0.2%</td><td class="n">80.6%</td><td class="n">19.4%</td><td class="n">$14.2</td></tr>
+<tr><td>0.3%</td><td class="n">83.0%</td><td class="n">17.0%</td><td class="n">$12.4</td></tr>
+<tr><td>0.5%</td><td class="n">85.0%</td><td class="n">15.0%</td><td class="n">$10.9</td></tr>
+<tr><td>1.0%</td><td class="n">86.6%</td><td class="n">13.4%</td><td class="n">$9.8</td></tr>
+<tr><td>直接亏着挖</td><td class="n">—</td><td class="n">100%</td><td class="n">$72.9</td></tr></table>
+<p>走动越小一轮越快，但每枚越贵；±0.3%–0.5% 是速度和成本的平衡点。</p>
+
+<h2>4. 它怎么跑</h2>
+<ol>
+  <li>读协议状态：没暂停、没公告、池子没欠款、haircut 参数没被改。</li>
+  <li>在 BTC/ETH 里选每 1000 PAPER 最便宜、且两边 OI 余量够的市场；按余额算每腿保证金和"目标能放下"的最高杠杆。</li>
+  <li>先开 OI 余量少的那边，再开另一边；第二腿没开成立刻平第一腿。</li>
+  <li>盯 Hyperliquid 中间价；到 ±x 两腿一起平；到紧急线（强平距离 × 0.6）强制平。</li>
+  <li>从成交记录读实际盈亏和铸出的 PAPER，记账、结算服务费，歇 20 秒再开。</li>
+  <li>只剩一腿时立刻平掉；断线重连后自动接管已有仓位；预算烧完自动停。</li>
+</ol>
+
+<h2>5. 费用</h2>
+<p>服务费 = 策略净已实现亏损的 <b>3%</b>。预付（开跑前按预算 × 3%，最低 1 USDC），每轮结算：赢的那腿把净亏损压小时，多收的退回余额；停了余额留着下次用；余额为负则全平暂停。手动开的仓不收。</p>
+<p>服务费是你钱包直接转 USDC 到公示地址，链上可查；我们按交易哈希记账。</p>
+
+<h2>6. 安全边界</h2>
+<table><tr><th>动作</th><th>授权的密钥</th></tr>
+<tr><td>开仓 / 平仓</td><td class="ok">能</td></tr>
+<tr><td>提现 / 转账 / 动钱包其它资产</td><td class="no">不能（协议层面只认钱包本人签名）</td></tr>
+<tr><td>质押 / 解押 / 领分红</td><td class="no">不能（每次都要你钱包签）</td></tr>
+<tr><td>到期后</td><td class="no">不能（最长 7 天）</td></tr></table>
+<p>密钥在服务器上 AES-256-GCM 加密存储；钱包私钥从不经过本站。最坏情况（服务器被攻破）：攻击者能乱开仓亏掉保证金，拿不走钱。代码开源：<a href="https://github.com/borispie/paperhedge" target="_blank" rel="noopener">github.com/borispie/paperhedge</a>。细节见<a href="/security.html">安全说明</a>。</p>
+
+<h2>7. 风险</h2>
+<ul>
+  <li>这是故意亏钱换 PAPER；PAPER 现在不能转账，值多少取决于平台后续。</li>
+  <li>Papertrade 规则和接口随时改；参数一变本站自动停开新仓，但已有仓位按原规则处理。</li>
+  <li>relayer 排队会让成交价偏离触发价；极端行情可能单腿残留、甚至强平一腿。</li>
+  <li>铸币率持续下降，同样的钱换到的 PAPER 越来越少。</li>
+</ul>
+
+<h2>8. 路线</h2>
+<ul>
+  <li>已上线：自动选币、自动规模、抄底模式、断线接管、Telegram 告警、账单、一键质押/领分红。</li>
+  <li>下一步：策略历史导出、多策略并行、"亏损铸币"类项目的通用模板。</li>
+</ul>
+<p class="v">本文不构成投资建议。PaperHedge 与 Papertrade 无任何关系。</p>
+</article>
+
+<article id="doc-en" hidden lang="en">
+<h1>PaperHedge Whitepaper</h1>
+<div class="v">v1 · October 2026 · open source · paperhedge.xyz</div>
+
+<h2>1. In one sentence</h2>
+<p>PaperHedge is a hosted tool that opens a long and a short on Papertrade at the same time: the losing leg mints PAPER, the winning leg earns the money back, and you end up with the same PAPER for roughly 1/6 of the cost. A server runs it around the clock; you only authorize open/close and only deposit money you are willing to burn.</p>
+
+<h2>2. What PAPER is</h2>
+<p>Papertrade is a synthetic perpetuals exchange on HyperEVM where traders trade against a liquidity pool. For every dollar a trader loses, the protocol mints PAPER to that trader at the current mint rate. PAPER is non-transferable; staked PAPER earns a share of protocol fees in USDC.</p>
+<p>The mint rate is not fixed: 100 PAPER per dollar while the pool is under $2M, then decaying with "tail progress" — 23 per dollar on Oct 13, 14 per dollar by Oct 15. Earlier is cheaper.</p>
+
+<h2>3. Why hedging is cheaper</h2>
+<p>Open equal long and short in the same account and close both when price moves ±x%:</p>
+<ul>
+  <li>Losing leg: loses <code>notional × x</code>, all of it mints PAPER (98% after the protocol's 2% is carved out).</li>
+  <li>Winning leg: wins <code>notional × x</code>, minus the protocol's asymmetric-impact haircut and a 2% win fee.</li>
+</ul>
+<p>Your net cost is only the haircut plus fee. The haircut formula is from the Papertrade docs:</p>
+<span class="f">scale = (1 − 0.10) / (1 + 1/(x·15000) + 100000/(1e6·x·M))
+M = 814.6 (BTC) / 484.0 (ETH)
+winner receives = notional·x·scale·0.98</span>
+<p>On BTC, what the winner keeps at different move sizes:</p>
+<table><tr><th>Move x</th><th class="n">Winner keeps</th><th class="n">Net cost / loss</th><th class="n">Per 1,000 PAPER (rate 14)</th></tr>
+<tr><td>0.2%</td><td class="n">80.6%</td><td class="n">19.4%</td><td class="n">$14.2</td></tr>
+<tr><td>0.3%</td><td class="n">83.0%</td><td class="n">17.0%</td><td class="n">$12.4</td></tr>
+<tr><td>0.5%</td><td class="n">85.0%</td><td class="n">15.0%</td><td class="n">$10.9</td></tr>
+<tr><td>1.0%</td><td class="n">86.6%</td><td class="n">13.4%</td><td class="n">$9.8</td></tr>
+<tr><td>Plain loss mining</td><td class="n">—</td><td class="n">100%</td><td class="n">$72.9</td></tr></table>
+<p>Smaller moves complete faster but cost more per PAPER; ±0.3%–0.5% is the sweet spot between speed and cost.</p>
+
+<h2>4. How it runs</h2>
+<ol>
+  <li>Read protocol state: not paused, no notices, no queue debt, haircut parameters unchanged.</li>
+  <li>Pick the market (BTC/ETH) with the lowest cost per 1,000 PAPER and enough open-interest headroom on both sides; size each leg from your balance and use the highest leverage the target still fits under.</li>
+  <li>Open the side with less headroom first, then the other; if the second leg fails, close the first immediately.</li>
+  <li>Watch the Hyperliquid mid price; close both legs at ±x; force-close at the emergency line (0.6 × liquidation distance).</li>
+  <li>Read realized PnL and minted PAPER from the trade history, record the round, settle the fee, pause 20 s, repeat.</li>
+  <li>Close a stray single leg at once; re-adopt open positions after a disconnect; stop when the budget is spent.</li>
+</ol>
+
+<h2>5. Fees</h2>
+<p>Service fee = <b>3%</b> of the strategy's net realized loss. Prepaid (budget × 3% before start, minimum 1 USDC), settled every round: when a winning close shrinks the net loss, the excess is refunded to your balance; the balance stays for next time when you stop; a negative balance flattens and pauses. Manual positions are not charged.</p>
+<p>Fees are USDC transferred from your wallet to a published address, verifiable on-chain; we credit by transaction hash.</p>
+
+<h2>6. Security boundary</h2>
+<table><tr><th>Action</th><th>The authorized key</th></tr>
+<tr><td>Open / close positions</td><td class="ok">Can</td></tr>
+<tr><td>Withdraw / transfer / touch other wallet assets</td><td class="no">Cannot (the protocol only accepts the wallet's own signature)</td></tr>
+<tr><td>Stake / unstake / claim</td><td class="no">Cannot (your wallet signs each time)</td></tr>
+<tr><td>After expiry</td><td class="no">Cannot (7 days max)</td></tr></table>
+<p>Keys are stored AES-256-GCM encrypted on the server; your wallet private key never touches this site. Worst case (server compromise): an attacker could open bad positions and burn margin, but cannot take funds out. Source: <a href="https://github.com/borispie/paperhedge" target="_blank" rel="noopener">github.com/borispie/paperhedge</a>. Details in the <a href="/security.html">security notes</a>.</p>
+
+<h2>7. Risks</h2>
+<ul>
+  <li>This deliberately loses money for PAPER; PAPER is non-transferable today and its value depends on the platform.</li>
+  <li>Papertrade's rules and interfaces change often; a parameter change halts new positions site-wide, but open positions settle under the old rules.</li>
+  <li>Relayer queuing moves fills away from the trigger price; extreme moves can leave a single leg or liquidate one.</li>
+  <li>The mint rate keeps falling, so the same money buys less PAPER over time.</li>
+</ul>
+
+<h2>8. Roadmap</h2>
+<ul>
+  <li>Live: auto market selection, auto sizing, dip mode, disconnect takeover, Telegram alerts, billing, one-click stake/claim.</li>
+  <li>Next: history export, parallel strategies, a reusable template for other loss-minting protocols.</li>
+</ul>
+<p class="v">Not investment advice. PaperHedge is not affiliated with Papertrade.</p>
+</article>
+
+<script>
+  const set = (l) => { document.getElementById('doc-zh').hidden = l !== 'zh'; document.getElementById('doc-en').hidden = l !== 'en'; document.getElementById('zh').setAttribute('aria-pressed', String(l === 'zh')); document.getElementById('en').setAttribute('aria-pressed', String(l === 'en')); document.documentElement.lang = l === 'zh' ? 'zh-CN' : 'en'; try { localStorage.setItem('pf_lang', l); } catch {} };
+  document.getElementById('zh').onclick = () => set('zh'); document.getElementById('en').onclick = () => set('en');
+  let l = 'zh'; try { l = location.hash === '#en' ? 'en' : location.hash === '#zh' ? 'zh' : (localStorage.getItem('pf_lang') || ((navigator.language || '').startsWith('zh') ? 'zh' : 'en')); } catch {} set(l);
+</script>
+</main></body></html>

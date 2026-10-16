@@ -1,0 +1,16 @@
+{
+  "name": "paper-farm",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "engines": { "node": ">=22.5" },
+  "scripts": {
+    "worker": "node --no-warnings server/worker.mjs",
+    "api": "node --no-warnings server/api.mjs",
+    "check": "node --check server/*.mjs"
+  },
+  "dependencies": {
+    "papertrade-sdk": "github:nirholas/papertrade-sdk#483a760",
+    "viem": "^2.21.0"
+  }
+}
