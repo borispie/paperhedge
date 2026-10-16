@@ -211,8 +211,8 @@ route('POST', '/api/fee/register', async (b, q, wallet) => {
   const amount = await verifyFeeTx(b.txHash, wallet);
   const r = DB.feePrepay(wallet, amount, b.txHash.toLowerCase());
   if (r.duplicate) throw new HttpError(409, '这笔交易已经登记过了');
-  DB.addEvent(wallet, 'info', 'fee-prepay', `预付 $${amount.toFixed(2)} · ${b.txHash.slice(0, 10)}…`);
-  tg(`💵 ${wallet.slice(0, 6)}… 预付服务费 $${amount.toFixed(2)}（余额 $${r.balance.toFixed(2)}）`);
+  DB.addEvent(wallet, 'info', 'fee-prepay', `${CFG.feeBps > 0 ? '预付' : '收到支持'} $${amount.toFixed(2)} · ${b.txHash.slice(0, 10)}…`);
+  tg(`💵 ${wallet.slice(0, 6)}… ${CFG.feeBps > 0 ? '预付服务费' : '转来支持'} $${amount.toFixed(2)}（累计 $${r.balance.toFixed(2)}）`);
   const st = DB.getStrategy(wallet);
   if (st && st.status === 'halted_fee' && r.balance > 0) DB.setStrategyStatus(wallet, 'running', '预付后恢复');
   return { credited: amount, balance: r.balance };

@@ -187,7 +187,7 @@
     <ol class="steps">
       <li id="s-connect"><div><div class="t">连接钱包</div><div class="d">MetaMask / OKX / Rabby，网络 HyperEVM。签一条登录消息，不花钱、不授权任何东西。</div></div><div><button class="btn" id="btn-connect2" disabled>连接钱包</button></div></li>
       <li id="s-auth"><div><div class="t">签一次授权</div><div class="d" id="s-auth-d">有效期 <select id="ttl" style="width:auto;display:inline-block;padding:2px 6px"><option value="1">1 天</option><option value="3" selected>3 天</option><option value="7">7 天</option></select>，到期自动失效，随时能撤。</div></div><div><button class="btn ghost" id="btn-auth" disabled>签名授权</button></div></li>
-      <li id="s-fee"><div><div class="t">预付服务费</div><div class="d" id="s-fee-d">预算 × 3%，最低 1 USDC。</div><div class="inline" style="margin-top:6px"><input id="txhash" type="text" placeholder="转过了？粘贴交易哈希" style="max-width:300px;font-size:13px"><button class="btn ghost" id="btn-register" disabled>登记</button></div></div><div><button class="btn ghost" id="btn-prepay" disabled>转账</button></div></li>
+      <li id="s-fee"><div><div class="t" id="s-fee-t">预付服务费</div><div class="d" id="s-fee-d">预算 × 3%，最低 1 USDC。</div><div class="inline" style="margin-top:6px"><label id="tip-wrap" class="hide" style="display:inline-flex;align-items:center;gap:6px;font-size:13px">金额 <input id="tip-amount" type="number" min="0.1" step="0.5" value="1" style="width:72px;font-size:13px;padding:4px 6px"> USDC</label><input id="txhash" type="text" placeholder="转过了？粘贴交易哈希" style="max-width:300px;font-size:13px"><button class="btn ghost" id="btn-register" disabled>登记</button></div></div><div><button class="btn ghost" id="btn-prepay" disabled>转账</button></div></li>
       <li id="s-start"><div><div class="t">开始</div><div class="d">服务器按上面的参数开两腿、到价一起平、再开，直到预算烧完或你点停。</div></div><div class="inline"><button class="btn" id="btn-start" disabled>开始</button><button class="btn ghost hide" id="btn-stop">停止</button></div></li>
     </ol>
   </section>
@@ -250,7 +250,7 @@
     <details><summary>对冲为什么便宜？</summary><p>同时开多空，价格往哪走都是一腿亏、一腿赚。亏的那腿铸 PAPER，赢的那腿平台扣一点冲击费和 2% 手续费。净花的只是那点扣费，大约是亏损额的 13–18%。自己手动亏着挖是 100%。</p></details>
     <details><summary>一天能换多少？</summary><p>看行情。走 ±0.3% 平一轮，BTC 活跃的时候一小时一轮，闷的时候几小时一轮。铸币率每天在掉，早挖便宜。</p></details>
     <details><summary>会不会亏光？</summary><p>预算烧完就停。极端行情下可能多亏一点（排队、单腿）。电脑不用开着，服务器在跑。</p></details>
-    <details id="faq-fee"><summary>收费吗？</summary><p id="faq-fee-p">现在免费。以后要是收，也只收净亏损的一小部分，会提前在这里和 X 上说。</p></details>
+    <details id="faq-fee"><summary>收费吗？</summary><p id="faq-fee-p">现在免费。第 3 步那个转账是自愿的，算给我的鼓励，不转功能一模一样。以后要是收费，会提前在这里和 X 上说。</p></details>
     <details><summary>怎么停、怎么撤权？</summary><p>页面上点"停止"，可以选这轮平完再停或者立刻全平。撤权去 Papertrade 网站 Settings 里 revoke，或者等密钥到期。</p></details>
     <details><summary>这是谁做的？</summary><p>我，一个人。有 bug、有想法、有骂的，X 上找我 <a href="https://x.com/siyiluo2" target="_blank" rel="noopener">@siyiluo2</a>，我每天都会看，能改的尽快改。</p></details>
   </section>
@@ -283,17 +283,24 @@ async function loadMarket() {
   try {
     market = await api('/api/market');
     FREE = !!market.fee.free;
-    for (const id of ['s-fee', 'fee-rule', 'd-fee-row']) $(id).classList.toggle('hide', FREE);
+    $('fee-rule').classList.toggle('hide', FREE);
     document.querySelectorAll('.fee-col').forEach((el) => el.classList.toggle('hide', FREE));
-    $('free-line').textContent = FREE ? '现在免费用。' : '';
+    $('free-line').textContent = FREE ? '现在免费用，我会一直更新。' : '';
     $('fee-pct').textContent = market.fee.pct; $('fee-min').textContent = market.fee.minUsdc;
-    if (!FREE) $('faq-fee-p').textContent = `净亏损的 ${market.fee.pct}%，开跑前按预算预付（最低 ${market.fee.minUsdc} USDC），每轮结算，赢了退，停了余额留着下次用。手动开的仓不收。`;
+    if (FREE) {
+      $('s-fee-t').textContent = '给作者一点鼓励（可选）';
+      $('s-fee-d').textContent = '工具免费，这步跳过也一样用。觉得有用的话随便转一点 USDC（HyperEVM 上的），当是让我每天继续改这个东西的动力。';
+      $('tip-wrap').classList.remove('hide');
+      $('d-fee-row').firstElementChild.textContent = '你支持过';
+    } else {
+      $('faq-fee-p').textContent = `净亏损的 ${market.fee.pct}%，开跑前按预算预付（最低 ${market.fee.minUsdc} USDC），每轮结算，赢了退，停了余额留着下次用。手动开的仓不收。`;
+      $('s-fee-d').textContent = `预算 × ${market.fee.pct}%，最低 ${market.fee.minUsdc} USDC（HyperEVM 上的 USDC，钱包留一点 HYPE 付 gas）。`;
+    }
     $('t-rate').textContent = fmt(market.mintRate, 1); $('h-rate2').textContent = fmt(market.mintRate * 0.98, 1);
     const b = market.instruments.find((i) => i.symbol === 'BTC'), e = market.instruments.find((i) => i.symbol === 'ETH');
     $('t-btc').textContent = b ? fmt(b.price, 0) : '—'; $('t-eth').textContent = e ? fmt(e.price, 2) : '—';
     $('t-halt').textContent = market.halt ? '⚠ 全站暂停开仓：' + market.halt : (market.dip ? '⚡ 抄底模式' : '');
     $('h-direct').textContent = '$' + fmt(market.directPerPaper, 4);
-    $('s-fee-d').textContent = `预算 × ${market.fee.pct}%，最低 ${market.fee.minUsdc} USDC（HyperEVM 上的 USDC，钱包留一点 HYPE 付 gas）。`;
   } catch (e) { $('t-halt').textContent = '行情读取失败: ' + e.message; }
 }
 async function loadStats() {
@@ -362,9 +369,16 @@ async function authorize() {
   toast('还没确认，页面会自动更新');
 }
 async function prepay() {
-  const need = Math.max(0, (lastEst?.feeRequired ?? market.fee.minUsdc) - (me?.fee?.balance ?? 0));
-  const amount = Math.max(market.fee.minUsdc, Math.ceil(need * 100) / 100);
-  if (!confirm(`将从你的钱包转 ${amount} USDC（HyperEVM）到服务费地址 ${market.fee.treasury}，确认？`)) return;
+  let amount;
+  if (FREE) {
+    amount = Math.round(Number($('tip-amount').value) * 100) / 100;
+    if (!(amount >= 0.1)) throw new Error('金额至少 0.1 USDC');
+    if (!confirm(`转 ${amount} USDC（HyperEVM）给作者 ${market.fee.treasury}。这是自愿的，不影响使用。确认？`)) return;
+  } else {
+    const need = Math.max(0, (lastEst?.feeRequired ?? market.fee.minUsdc) - (me?.fee?.balance ?? 0));
+    amount = Math.max(market.fee.minUsdc, Math.ceil(need * 100) / 100);
+    if (!confirm(`将从你的钱包转 ${amount} USDC（HyperEVM）到服务费地址 ${market.fee.treasury}，确认？`)) return;
+  }
   await ensureChain();
   const units = BigInt(Math.round(amount * 1e6));
   const data = '0xa9059cbb' + market.fee.treasury.slice(2).padStart(64, '0') + units.toString(16).padStart(64, '0');
@@ -372,12 +386,12 @@ async function prepay() {
   toast('已发送，等确认后自动登记…');
   for (let i = 0; i < 30; i++) {
     await new Promise((x) => setTimeout(x, 4000));
-    try { const r = await api('/api/fee/register', { txHash }, true); toast(`已预付 $${fmt(r.credited)}，余额 $${fmt(r.balance)}`); await refreshMe(); return; }
+    try { const r = await api('/api/fee/register', { txHash }, true); toast(FREE ? `收到 $${fmt(r.credited)}，谢谢！` : `已预付 $${fmt(r.credited)}，余额 $${fmt(r.balance)}`); await refreshMe(); return; }
     catch (e) { if (!/还没查到/.test(e.message)) { $('txhash').value = txHash; throw e; } }
   }
   $('txhash').value = txHash; throw new Error('链上确认慢，稍后点"登记"');
 }
-async function registerTx() { const r = await api('/api/fee/register', { txHash: $('txhash').value.trim() }, true); toast(`已登记 $${fmt(r.credited)}，余额 $${fmt(r.balance)}`); $('txhash').value = ''; await refreshMe(); }
+async function registerTx() { const r = await api('/api/fee/register', { txHash: $('txhash').value.trim() }, true); toast(FREE ? `收到 $${fmt(r.credited)}，谢谢！` : `已登记 $${fmt(r.credited)}，余额 $${fmt(r.balance)}`); $('txhash').value = ''; await refreshMe(); }
 async function start() { await api('/api/strategy/start', { budgetUsd: Number($('budget').value), params: params() }, true); toast('已开始，服务器接管'); await refreshMe(); }
 async function stop() { const soft = confirm('这轮平完再停（确定）还是现在就全平（取消）？'); await api('/api/strategy/stop', { mode: soft ? 'soft' : 'now' }, true); toast(soft ? '本轮平完后停止' : '正在全平'); await refreshMe(); }
 async function resume() { await api('/api/strategy/resume', {}, true); toast('已恢复'); await refreshMe(); }
@@ -395,7 +409,7 @@ async function refreshMe() {
   $('dash').classList.remove('hide');
   $('d-balance').textContent = '$' + fmt(me.balanceUsd); $('d-avail').textContent = '$' + fmt(me.availableUsd);
   $('d-paper').textContent = `${fmt(me.paper, 1)} / ${fmt(me.staked, 1)}`; $('d-reward').textContent = '$' + fmt(me.pendingRewardUsd, 4);
-  $('d-fee').textContent = `$${fmt(me.fee.balance)}（本期已收 $${fmt(me.fee.period_charged)}）`;
+  $('d-fee').textContent = FREE ? (me.fee.balance > 0 ? `$${fmt(me.fee.balance)}，谢谢` : '还没有，不用也行') : `$${fmt(me.fee.balance)}（本期已收 $${fmt(me.fee.period_charged)}）`;
   const st = me.strategy, tag = $('strat-tag');
   const label = { running: '运行中', stopping: '正在全平', stopping_soft: '本轮平完停', stopped: '已停止', halted_fee: '服务费不足，已暂停', halted_session: '授权失效，已暂停', done_budget: '预算烧完' }[st?.status] || '未运行';
   tag.textContent = label; tag.className = 'tag ' + (st?.status === 'running' ? 'on' : (st && /halted/.test(st.status) ? 'off' : ''));
@@ -429,9 +443,10 @@ function refreshButtons() {
   $('btn-auth').disabled = !ack || !logged || sessOk; $('btn-auth').textContent = sessOk ? '已授权' : me?.session?.state === 'submitted' ? '等链上确认…' : '签名授权';
   $('s-auth').classList.toggle('done', sessOk);
   if (sessOk) $('s-auth-d').textContent = `已授权 ${short(me.session.address)}，到期 ${new Date(me.session.expiry * 1000).toLocaleString('zh-CN', { hour12: false })}`;
-  $('btn-prepay').disabled = !ack || !logged || feeOk; $('btn-register').disabled = !logged;
-  $('btn-prepay').textContent = feeOk ? `余额够（$${fmt(me?.fee?.balance ?? 0)}）` : '转账预付';
-  $('s-fee').classList.toggle('done', logged && feeOk);
+  const tipped = (me?.fee?.balance ?? 0) > 0;
+  $('btn-prepay').disabled = !logged || (!FREE && (!ack || feeOk)); $('btn-register').disabled = !logged;
+  $('btn-prepay').textContent = FREE ? (tipped ? '再转一点' : '转一点支持') : feeOk ? `余额够（$${fmt(me?.fee?.balance ?? 0)}）` : '转账预付';
+  $('s-fee').classList.toggle('done', logged && (FREE ? tipped : feeOk));
   $('btn-start').disabled = !ack || !logged || !sessOk || !feeOk || running; $('btn-start').textContent = running ? '运行中' : '开始挖';
   $('btn-stop').classList.toggle('hide', !running); $('s-start').classList.toggle('done', !!running);
 }
