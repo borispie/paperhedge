@@ -89,7 +89,7 @@ export const updateStrategyParams = (w, params, budgetUsd) => S.stratParams.run(
 
 // ---- fees ----
 export function feeAccount(w) { S.feeEnsure.run(w.toLowerCase()); return S.feeGet.get(w.toLowerCase()); }
-export const feeRequired = (budgetUsd, bps = CFG.feeBps, min = CFG.feeMinUsdc) => Math.max(min, (budgetUsd * bps) / 10000);
+export const feeRequired = (budgetUsd, bps = CFG.feeBps, min = CFG.feeMinUsdc) => (bps <= 0 ? 0 : Math.max(min, (budgetUsd * bps) / 10000));
 export function feePrepay(w, amount, txHash, note = null) {
   w = w.toLowerCase();
   if (txHash && S.ledgerByTx.get(txHash)) return { duplicate: true };

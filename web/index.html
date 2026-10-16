@@ -123,14 +123,14 @@
 <body>
 <div class="top"><div class="wrap">
   <a class="brand" href="#"><i></i>PaperHedge</a>
-  <nav><a href="#calc">算一算</a><a href="#how">怎么运作</a><a href="#trust">安全</a><a href="#faq">常见问题</a><a href="/whitepaper.html">白皮书</a></nav>
+  <nav><a href="#calc">算一算</a><a href="#how">怎么用</a><a href="#trust">安全</a><a href="#faq">问答</a><a href="/whitepaper.html">白皮书</a></nav>
   <div class="right"><button class="btn" id="btn-connect">连接钱包</button></div>
 </div></div>
 <div class="ticker"><div class="wrap">
   <span class="tk">铸币率 <b id="t-rate">—</b> PAPER/$</span>
   <span class="tk">全站已铸 <b id="t-paper">—</b> PAPER</span>
   <span class="tk">今日 <b id="t-rounds">—</b> 轮</span>
-  <span class="tk">在跑 <b id="t-active">—</b> 个策略</span>
+  <span class="tk">在跑 <b id="t-active">—</b> 个</span>
   <span class="tk">BTC <b id="t-btc">—</b></span>
   <span class="tk">ETH <b id="t-eth">—</b></span>
   <span class="tk" id="t-halt"></span>
@@ -139,25 +139,25 @@
 <main class="wrap">
   <section class="hero">
     <h1>同样的钱，多拿 <span class="num" id="h-times">6</span> 倍 PAPER</h1>
-    <p class="lead">在 Papertrade 上同时开多和空。亏的那腿铸 PAPER，赢的那腿把钱赚回来。服务器 24 小时替你盯盘、平仓、重开，你只管看账单。</p>
+    <p class="lead">我自己写的 Papertrade 自动对冲工具：同时开多和空，亏的那腿铸 PAPER，赢的那腿把钱赚回来。挂在服务器上 24 小时跑，电脑关了也不停。<span id="free-line">现在免费用。</span></p>
     <div class="compare">
-      <div class="cmp"><div class="k">直接亏着挖，每枚 PAPER</div><div class="v" id="h-direct">—</div><div class="s">开单等爆仓或止损，亏 1 块铸 <span id="h-rate2">—</span> 枚</div></div>
-      <div class="cmp win"><div class="k">对冲挖，每枚 PAPER</div><div class="v" id="h-hedge">—</div><div class="s">含 <span id="h-fee">3</span>% 服务费 · 省 <span id="h-save">—</span></div></div>
+      <div class="cmp"><div class="k">自己手动亏着挖，每枚</div><div class="v" id="h-direct">—</div><div class="s">亏 1 块铸 <span id="h-rate2">—</span> 枚</div></div>
+      <div class="cmp win"><div class="k">对冲挖，每枚</div><div class="v" id="h-hedge">—</div><div class="s">省 <span id="h-save">—</span></div></div>
     </div>
-    <div class="cta"><a class="btn" href="#calc">算一算我能换多少</a><a class="btn ghost" href="#trust">它凭什么安全</a></div>
+    <div class="cta"><a class="btn" href="#calc">算一算我能换多少</a><a class="btn ghost" href="#trust">为什么敢连钱包</a></div>
   </section>
 
   <section class="block card" id="calc">
     <h2>算一算</h2>
-    <p class="sub">不用登录。填你打算放进 Papertrade 的钱和愿意烧掉的预算。</p>
+    <p class="sub">不用登录。填两个数就行。</p>
     <div class="chips" role="group" aria-label="预设">
       <button class="chip" data-preset="lowcost" aria-pressed="true">省钱 · ±0.5%</button>
       <button class="chip" data-preset="fast" aria-pressed="false">快 · ±0.3%</button>
       <button class="chip" data-preset="custom" aria-pressed="false">自定义</button>
     </div>
     <div class="row">
-      <div class="field"><label for="avail">Papertrade 账户里的钱（USDC）</label><input id="avail" type="number" min="21" step="1" value="100"></div>
-      <div class="field"><label for="budget">愿意烧掉的预算（USDC，烧完自动停）</label><input id="budget" type="number" min="1" step="1" value="30"></div>
+      <div class="field"><label for="avail">Papertrade 账户里有多少钱（USDC）</label><input id="avail" type="number" min="21" step="1" value="100"></div>
+      <div class="field"><label for="budget">打算烧多少（USDC，烧完自动停）</label><input id="budget" type="number" min="1" step="1" value="30"></div>
     </div>
     <details id="adv"><summary>高级参数（市场 / 杠杆 / 平仓目标 / 每腿保证金）</summary>
       <div class="row" style="margin-top:10px">
@@ -168,8 +168,8 @@
       </div>
     </details>
     <div class="est">
-      <div class="box"><div class="k">每枚 PAPER</div><div class="v" id="e-per">—</div><div class="s" id="e-per-s">含服务费</div></div>
-      <div class="box"><div class="k">这笔预算能换</div><div class="v" id="e-paper">—</div><div class="s" id="e-paper-s">PAPER</div></div>
+      <div class="box"><div class="k">每枚 PAPER</div><div class="v" id="e-per">—</div><div class="s" id="e-per-s">&nbsp;</div></div>
+      <div class="box"><div class="k">这笔钱能换</div><div class="v" id="e-paper">—</div><div class="s" id="e-paper-s">PAPER</div></div>
       <div class="box"><div class="k">每轮</div><div class="v" id="e-round">—</div><div class="s" id="e-round-s">净花 / 铸</div></div>
     </div>
     <p class="plan" id="e-plan">—</p>
@@ -177,18 +177,18 @@
   </section>
 
   <section class="block card" id="how">
-    <h2>三步开跑</h2>
-    <p class="sub">授权的是一把只能在你 Papertrade 账户里开仓、平仓的交易密钥：不能提现、不能转走任何资产、到期自动失效、随时可撤。</p>
-    <div class="risk">不适合新手：这是故意亏钱换 PAPER，放进去的保证金会一轮一轮亏掉，换回来的是不能转账的 PAPER 和它的分红。只放输光也无所谓的钱。
-      <ul><li>Papertrade 规则和接口常改；策略可能变成单边；relayer 排队会让成交价偏离触发价；所有数字都是估算。</li>
-      <li>服务费 = 策略净已实现亏损的 <span id="fee-pct">3</span>%，预付，每次最低 <span id="fee-min">1</span> USDC；赢的那腿把净亏损压小时多收的退回；余额不够会全平停止。</li></ul>
+    <h2>怎么用</h2>
+    <p class="sub">连钱包、签一次授权、点开始。授权的是一把只能开仓平仓的交易密钥，提不了现，到期自动失效。</p>
+    <div class="risk">先说清楚：这是故意亏钱换 PAPER。放进去的保证金会一轮一轮亏掉，换回来的是 PAPER 和它的分红。PAPER 现在不能转账，值多少钱没人能保证。只放亏光也不心疼的钱。
+      <ul><li>Papertrade 规则常改，行情极端时可能剩单腿、成交价偏一点。页面上的数字都是估算。</li>
+      <li id="fee-rule">服务费 = 净亏损的 <span id="fee-pct">3</span>%，开跑前预付，最低 <span id="fee-min">1</span> USDC，赢了退、停了留着下次用。</li></ul>
     </div>
-    <p><label style="display:flex;gap:8px;align-items:flex-start"><input type="checkbox" id="ack" style="margin-top:4px">我读懂了风险，接受。</label></p>
+    <p><label style="display:flex;gap:8px;align-items:flex-start"><input type="checkbox" id="ack" style="margin-top:4px">知道了，我接受。</label></p>
     <ol class="steps">
-      <li id="s-connect"><div><div class="t">连接钱包并登录</div><div class="d">MetaMask / OKX / Rabby，网络 HyperEVM。登录只是签一条消息，不花钱、不授权任何东西。</div></div><div><button class="btn" id="btn-connect2" disabled>连接钱包</button></div></li>
-      <li id="s-auth"><div><div class="t">授权交易密钥</div><div class="d" id="s-auth-d">有效期 <select id="ttl" style="width:auto;display:inline-block;padding:2px 6px"><option value="1">1 天</option><option value="3" selected>3 天</option><option value="7">7 天</option></select>，到期自动失效。</div></div><div><button class="btn ghost" id="btn-auth" disabled>签名授权</button></div></li>
-      <li id="s-fee"><div><div class="t">预付服务费</div><div class="d" id="s-fee-d">预算 × 3%，最低 1 USDC（HyperEVM 上的 USDC，钱包留一点 HYPE 付 gas）。</div><div class="inline" style="margin-top:6px"><input id="txhash" type="text" placeholder="已经转过？粘贴交易哈希登记" style="max-width:340px;font-size:13px"><button class="btn ghost" id="btn-register" disabled>登记</button></div></div><div><button class="btn ghost" id="btn-prepay" disabled>转账预付</button></div></li>
-      <li id="s-start"><div><div class="t">开始</div><div class="d">服务器按上面的参数开两腿、到价一起平、再开，直到预算烧完或你停止。</div></div><div class="inline"><button class="btn" id="btn-start" disabled>开始挖</button><button class="btn ghost hide" id="btn-stop">停止</button></div></li>
+      <li id="s-connect"><div><div class="t">连接钱包</div><div class="d">MetaMask / OKX / Rabby，网络 HyperEVM。签一条登录消息，不花钱、不授权任何东西。</div></div><div><button class="btn" id="btn-connect2" disabled>连接钱包</button></div></li>
+      <li id="s-auth"><div><div class="t">签一次授权</div><div class="d" id="s-auth-d">有效期 <select id="ttl" style="width:auto;display:inline-block;padding:2px 6px"><option value="1">1 天</option><option value="3" selected>3 天</option><option value="7">7 天</option></select>，到期自动失效，随时能撤。</div></div><div><button class="btn ghost" id="btn-auth" disabled>签名授权</button></div></li>
+      <li id="s-fee"><div><div class="t">预付服务费</div><div class="d" id="s-fee-d">预算 × 3%，最低 1 USDC。</div><div class="inline" style="margin-top:6px"><input id="txhash" type="text" placeholder="转过了？粘贴交易哈希" style="max-width:300px;font-size:13px"><button class="btn ghost" id="btn-register" disabled>登记</button></div></div><div><button class="btn ghost" id="btn-prepay" disabled>转账</button></div></li>
+      <li id="s-start"><div><div class="t">开始</div><div class="d">服务器按上面的参数开两腿、到价一起平、再开，直到预算烧完或你点停。</div></div><div class="inline"><button class="btn" id="btn-start" disabled>开始</button><button class="btn ghost hide" id="btn-stop">停止</button></div></li>
     </ol>
   </section>
 
@@ -201,9 +201,9 @@
           <tr><td>可用</td><td class="num" id="d-avail">—</td></tr>
           <tr><td>PAPER 未质押 / 已质押</td><td class="num" id="d-paper">—</td></tr>
           <tr><td>待领分红</td><td class="num" id="d-reward">—</td></tr>
-          <tr><td>服务费余额</td><td class="num" id="d-fee">—</td></tr>
+          <tr id="d-fee-row"><td>服务费余额</td><td class="num" id="d-fee">—</td></tr>
         </table>
-        <div class="inline" style="margin-top:10px"><button class="btn ghost" id="btn-stake">质押全部 PAPER</button><button class="btn ghost" id="btn-claim">领分红</button><button class="btn ghost hide" id="btn-resume">恢复运行</button><button class="btn ghost" id="btn-logout">退出登录</button></div>
+        <div class="inline" style="margin-top:10px"><button class="btn ghost" id="btn-stake">质押全部 PAPER</button><button class="btn ghost" id="btn-claim">领分红</button><button class="btn ghost hide" id="btn-resume">恢复运行</button><button class="btn ghost" id="btn-logout">退出</button></div>
       </div>
       <div>
         <div class="est" style="grid-template-columns:1fr 1fr;margin-top:0">
@@ -217,44 +217,45 @@
     <h2 style="margin-top:18px">持仓</h2>
     <table id="positions"><thead><tr><th>#</th><th>市场</th><th>方向</th><th class="num">保证金 × 杠杆</th><th class="num">入场</th><th class="num">现价</th><th class="num">走动</th><th class="num">强平</th></tr></thead><tbody><tr><td colspan="8" class="muted">没有仓位</td></tr></tbody></table>
     <h2 style="margin-top:18px">每轮记录</h2>
-    <table id="rounds"><thead><tr><th>时间</th><th>市场</th><th class="num">净花</th><th class="num">PAPER</th><th class="num">$/千枚</th><th class="num">服务费</th></tr></thead><tbody><tr><td colspan="6" class="muted">还没有</td></tr></tbody></table>
+    <table id="rounds"><thead><tr><th>时间</th><th>市场</th><th class="num">净花</th><th class="num">PAPER</th><th class="num">$/千枚</th><th class="num fee-col">服务费</th></tr></thead><tbody><tr><td colspan="6" class="muted">还没有</td></tr></tbody></table>
     <h2 style="margin-top:18px">日志</h2>
     <div class="log" id="log"></div>
   </section>
 
   <section class="block card" id="trust">
-    <h2>它凭什么安全</h2>
-    <p class="sub">你不交私钥。你在钱包里签一次 Papertrade 的 <code>RegisterSessionKey</code>，授权一把我们服务器生成的交易密钥。这是 Papertrade 自己的机制，官网前端也这么用。</p>
+    <h2>为什么敢连钱包</h2>
+    <p class="sub">你不交私钥。签的是 Papertrade 自己的 <code>RegisterSessionKey</code>，授权一把我服务器上生成的交易密钥。Papertrade 官网前端用的也是这个机制。</p>
     <div class="trust">
       <div><b>这把密钥能做</b><ul><li class="ok">在你的 Papertrade 账户里开仓</li><li class="ok">平仓</li></ul></div>
-      <div><b>这把密钥不能做</b><ul><li class="no">提现、转账、动你钱包里任何资产</li><li class="no">质押、解押、领分红（这些每次都要你钱包签）</li><li class="no">过期后做任何事（最长 7 天，你选）</li></ul></div>
+      <div><b>这把密钥做不了</b><ul><li class="no">提现、转账、碰你钱包里任何东西</li><li class="no">质押、解押、领分红（这些每次都要你自己签）</li><li class="no">过期后做任何事（最长 7 天，你选）</li></ul></div>
     </div>
     <ul style="font-size:14px;margin:12px 0 0;padding-left:18px">
-      <li><b>随时撤销</b>：在 Papertrade 网站或链上调用 <code>revokeSessionKey</code>，立刻失效；或者等它到期。</li>
-      <li><b>我们存什么</b>：那把交易密钥（AES-256 加密）、你的策略参数、每轮记录。不存你的钱包私钥——我们从来没见过它。</li>
-      <li><b>代码开源</b>：<a id="src-link" href="https://github.com/borispie/paperhedge" target="_blank" rel="noopener">github.com/borispie/paperhedge</a>，服务器跑的就是这份。自己看、自己跑都行。</li>
-      <li><b>钱不经过我们</b>：你的 USDC 在 Papertrade 合约里；服务费是你钱包直接转到公示地址，链上可查。</li>
+      <li><b>随时撤</b>：在 Papertrade 网站 Settings 里 revoke，或者等它到期。</li>
+      <li><b>我存什么</b>：那把交易密钥（加密）、你的参数、每轮记录。你的钱包私钥我从来没见过。</li>
+      <li><b>代码全开源</b>：<a id="src-link" href="https://github.com/borispie/paperhedge" target="_blank" rel="noopener">github.com/borispie/paperhedge</a>，服务器跑的就是这份，不信可以自己跑。</li>
+      <li><b>钱不经过我</b>：你的 USDC 一直在 Papertrade 合约里。</li>
     </ul>
-    <p class="small muted" style="margin-top:10px">细节见 <a href="/security.html">安全说明</a> · 原理和数字见 <a href="/whitepaper.html">白皮书（中 / EN）</a>。</p>
+    <p class="small muted" style="margin-top:10px">细节看 <a href="/security.html">安全说明</a>，原理和数字看 <a href="/whitepaper.html">白皮书（中 / EN）</a>。有问题直接找我：<a href="https://x.com/siyiluo2" target="_blank" rel="noopener">@siyiluo2</a></p>
   </section>
 
   <section class="block card" id="feed">
     <h2>最近成交</h2>
-    <p class="sub">全站用户最近几轮（地址打码）。</p>
+    <p class="sub">所有用户最近几轮，地址打码。</p>
     <table id="feedtbl"><thead><tr><th>时间</th><th>谁</th><th>市场</th><th class="num">净花</th><th class="num">铸 PAPER</th><th class="num">$/千枚</th></tr></thead><tbody><tr><td colspan="6" class="muted">还没有</td></tr></tbody></table>
   </section>
 
   <section class="block card faq" id="faq">
-    <h2>常见问题</h2>
-    <details><summary>PAPER 是什么，为什么要挖？</summary><p>Papertrade 把交易者的亏损按当前铸币率铸成 PAPER。质押 PAPER 能分平台手续费（USDC）。它现在不能转账，价值取决于平台后续怎么安排——这是赌叙事，不是稳赚。</p></details>
-    <details><summary>对冲为什么便宜？</summary><p>同时开多空，价格无论往哪走，一腿亏（铸 PAPER）、一腿赚（赢的那腿平台扣一点"冲击费"和 2% 手续费）。净花的只是那点扣费，大约是亏损额的 13–18%，而直接亏着挖净花 100%。</p></details>
-    <details><summary>一天能换多少？</summary><p>看行情。价格走动 ±0.3% 平一轮，BTC 活跃时一小时一轮，闷的时候几小时一轮。每轮花多少、换多少，上面"算一算"里是按实时铸币率算的。铸币率每天都在掉，早挖便宜。</p></details>
-    <details><summary>会不会亏光？</summary><p>你设的预算烧完就停。极端行情下 relayer 排队、单腿残留会多亏一点；电脑不用开着，断网也不影响，因为是服务器在跑。</p></details>
-    <details><summary>服务费怎么收？</summary><p>策略净已实现亏损的 3%，开跑前按预算预付（最低 1 USDC），每轮结算，赢的退回，停了余额留着下次用。手动开的仓不收。</p></details>
-    <details><summary>怎么停、怎么撤权？</summary><p>页面上点"停止"（可选这轮平完再停或立刻全平）。撤权在 Papertrade 网站 Settings 里 revoke，或等密钥到期。</p></details>
+    <h2>问答</h2>
+    <details><summary>PAPER 是什么？</summary><p>Papertrade 把交易者的亏损按当时的铸币率铸成 PAPER。质押 PAPER 能分平台手续费（USDC）。它现在不能转账，以后值多少看平台怎么安排。赌的是叙事，不是稳赚。</p></details>
+    <details><summary>对冲为什么便宜？</summary><p>同时开多空，价格往哪走都是一腿亏、一腿赚。亏的那腿铸 PAPER，赢的那腿平台扣一点冲击费和 2% 手续费。净花的只是那点扣费，大约是亏损额的 13–18%。自己手动亏着挖是 100%。</p></details>
+    <details><summary>一天能换多少？</summary><p>看行情。走 ±0.3% 平一轮，BTC 活跃的时候一小时一轮，闷的时候几小时一轮。铸币率每天在掉，早挖便宜。</p></details>
+    <details><summary>会不会亏光？</summary><p>预算烧完就停。极端行情下可能多亏一点（排队、单腿）。电脑不用开着，服务器在跑。</p></details>
+    <details id="faq-fee"><summary>收费吗？</summary><p id="faq-fee-p">现在免费。以后要是收，也只收净亏损的一小部分，会提前在这里和 X 上说。</p></details>
+    <details><summary>怎么停、怎么撤权？</summary><p>页面上点"停止"，可以选这轮平完再停或者立刻全平。撤权去 Papertrade 网站 Settings 里 revoke，或者等密钥到期。</p></details>
+    <details><summary>这是谁做的？</summary><p>我，一个人。有 bug、有想法、有骂的，X 上找我 <a href="https://x.com/siyiluo2" target="_blank" rel="noopener">@siyiluo2</a>，我每天都会看，能改的尽快改。</p></details>
   </section>
 
-  <footer>本站只提供托管执行工具，不构成投资建议，和 Papertrade 没有任何关系。资金进入第三方链上协议，本金和收益都有风险，自己判断、自己承担。 · <a href="https://github.com/borispie/paperhedge" target="_blank" rel="noopener">源码</a> · <a href="/security.html">安全说明</a> · <a href="/whitepaper.html">白皮书</a> · <a href="/whitepaper.html#en">Whitepaper</a></footer>
+  <footer>这是个人做的工具，和 Papertrade 没有关系，不构成投资建议。钱进的是第三方链上协议，风险自己判断。 · <a href="https://x.com/siyiluo2" target="_blank" rel="noopener">@siyiluo2</a> · <a href="https://github.com/borispie/paperhedge" target="_blank" rel="noopener">源码</a> · <a href="/security.html">安全说明</a> · <a href="/whitepaper.html">白皮书</a> · <a href="/whitepaper.html#en">EN</a></footer>
 </main>
 <div id="toast" role="status" aria-live="polite"></div>
 
@@ -263,7 +264,7 @@ const API = window.PF_API || '';
 const $ = (id) => document.getElementById(id);
 const fmt = (x, d = 2) => (x === null || x === undefined || !Number.isFinite(+x)) ? '—' : (+x).toLocaleString('en-US', { minimumFractionDigits: d, maximumFractionDigits: d });
 const store = { get: (k) => { try { return localStorage.getItem(k); } catch { return null; } }, set: (k, v) => { try { localStorage.setItem(k, v); } catch {} }, del: (k) => { try { localStorage.removeItem(k); } catch {} } };
-let market = null, token = store.get('pf_token'), account = store.get('pf_wallet'), me = null, lastEventId = 0, pollTimer = null, lastEst = null;
+let FREE = false, market = null, token = store.get('pf_token'), account = store.get('pf_wallet'), me = null, lastEventId = 0, pollTimer = null, lastEst = null;
 const toast = (m) => { const t = $('toast'); t.textContent = m; t.classList.add('show'); clearTimeout(toast._t); toast._t = setTimeout(() => t.classList.remove('show'), 3500); };
 const esc = (s) => String(s).replace(/[&<>]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;' }[c]));
 const short = (a) => a ? a.slice(0, 6) + '…' + a.slice(-4) : '';
@@ -281,7 +282,12 @@ async function api(path, body, auth = false) {
 async function loadMarket() {
   try {
     market = await api('/api/market');
-    $('fee-pct').textContent = market.fee.pct; $('fee-min').textContent = market.fee.minUsdc; $('h-fee').textContent = market.fee.pct;
+    FREE = !!market.fee.free;
+    for (const id of ['s-fee', 'fee-rule', 'd-fee-row']) $(id).classList.toggle('hide', FREE);
+    document.querySelectorAll('.fee-col').forEach((el) => el.classList.toggle('hide', FREE));
+    $('free-line').textContent = FREE ? '现在免费用。' : '';
+    $('fee-pct').textContent = market.fee.pct; $('fee-min').textContent = market.fee.minUsdc;
+    if (!FREE) $('faq-fee-p').textContent = `净亏损的 ${market.fee.pct}%，开跑前按预算预付（最低 ${market.fee.minUsdc} USDC），每轮结算，赢了退，停了余额留着下次用。手动开的仓不收。`;
     $('t-rate').textContent = fmt(market.mintRate, 1); $('h-rate2').textContent = fmt(market.mintRate * 0.98, 1);
     const b = market.instruments.find((i) => i.symbol === 'BTC'), e = market.instruments.find((i) => i.symbol === 'ETH');
     $('t-btc').textContent = b ? fmt(b.price, 0) : '—'; $('t-eth').textContent = e ? fmt(e.price, 2) : '—';
@@ -311,13 +317,13 @@ async function estimate() {
     lastEst = r;
     if (!r.best) { $('e-plan').textContent = r.list.map((c) => `${c.sym}: ${c.why}`).join('；') || '—'; for (const k of ['e-per', 'e-paper', 'e-round']) $(k).textContent = '—'; refreshButtons(); return; }
     const b = r.best, p = b.plan, e = b.est;
-    $('e-per').textContent = '$' + fmt(e.perPaper, 4); $('e-per-s').textContent = `含 ${market?.fee.pct ?? 3}% 服务费，比直接挖省 ${((1 - e.perPaper / r.directPerPaper) * 100).toFixed(0)}%`;
-    $('e-paper').textContent = budgetUsd ? fmt(r.budgetPaper, 0) : '—'; $('e-paper-s').textContent = budgetUsd ? `PAPER，约 ${r.budgetRounds} 轮，启动预付 $${fmt(r.feeRequired)}` : 'PAPER';
+    $('e-per').textContent = '$' + fmt(e.perPaper, 4); $('e-per-s').textContent = `${FREE ? '' : '含 ' + (market?.fee.pct ?? 3) + '% 服务费，'}比手动挖省 ${((1 - e.perPaper / r.directPerPaper) * 100).toFixed(0)}%`;
+    $('e-paper').textContent = budgetUsd ? fmt(r.budgetPaper, 0) : '—'; $('e-paper-s').textContent = budgetUsd ? `PAPER，约 ${r.budgetRounds} 轮${FREE ? '' : '，启动预付 $' + fmt(r.feeRequired)}` : 'PAPER';
     $('e-round').textContent = `$${fmt(e.cost + e.fee)}`; $('e-round-s').textContent = `净花，铸 ${fmt(e.paper, 0)} PAPER（亏 $${fmt(e.lossUsd)} 赢 $${fmt(e.winUsd)}）`;
     $('e-plan').textContent = `方案：${b.sym} @${fmt(b.price, b.sym === 'BTC' ? 0 : 2)}，每腿 $${fmt(p.m)} × ${p.L}x（名义 $${fmt(p.notional, 0)}），走动 ±${(p.target * 100).toFixed(2)}% 两腿一起平，强平距离 ${(p.bustDist * 100).toFixed(2)}%。`;
     $('e-note').textContent = `铸币率按现在的 ${fmt(r.mintRate, 1)}/$ 算，它每天在掉。走动越小越快但越贵：±0.3% 比 ±0.5% 贵一成多。`;
     $('h-hedge').textContent = '$' + fmt(e.perPaper, 4); $('h-save').textContent = ((1 - e.perPaper / r.directPerPaper) * 100).toFixed(0) + '%'; $('h-times').textContent = (r.directPerPaper / e.perPaper).toFixed(1);
-    $('s-fee-d').textContent = `需预付 $${fmt(r.feeRequired)}（预算 × ${market?.fee.pct ?? 3}%，最低 ${market?.fee.minUsdc ?? 1} USDC）。HyperEVM 上的 USDC，钱包留一点 HYPE 付 gas。`;
+    if (!FREE) $('s-fee-d').textContent = `需预付 $${fmt(r.feeRequired)}（预算 × ${market?.fee.pct ?? 3}%，最低 ${market?.fee.minUsdc ?? 1} USDC）。HyperEVM 上的 USDC，钱包留一点 HYPE 付 gas。`;
     refreshButtons();
   } catch (e) { $('e-plan').textContent = '估算失败: ' + e.message; }
 }
@@ -396,7 +402,7 @@ async function refreshMe() {
   $('d-strat').textContent = st ? `预算 $${fmt(st.budget_usd)}，已花 $${fmt(st.spent_usd)}，换 ${fmt(st.paper, 0)} PAPER，${st.rounds} 轮。参数：${st.params.market === 'auto' ? '自动选币' : st.params.market}，杠杆 ${st.params.leverage}，目标 ±${(st.params.targetPct * 100).toFixed(2)}%` : '还没启动过策略。';
   $('d-note').classList.toggle('hide', !st?.note); $('d-note').textContent = st?.note || '';
   $('btn-resume').classList.toggle('hide', !st || !['halted_fee', 'halted_session', 'stopped', 'done_budget'].includes(st.status));
-  const s24 = me.stats24h; $('b-cost').textContent = '$' + fmt(s24.cost); $('b-cost-s').textContent = `${s24.n} 轮，服务费 $${fmt(s24.fee)}`;
+  const s24 = me.stats24h; $('b-cost').textContent = '$' + fmt(s24.cost); $('b-cost-s').textContent = `${s24.n} 轮${FREE ? '' : '，服务费 $' + fmt(s24.fee)}`;
   $('b-paper').textContent = fmt(s24.paper, 0); $('b-paper-s').textContent = `PAPER · 累计 ${fmt(me.statsAll.paper, 0)} / $${fmt(me.statsAll.cost)}`;
   const pb = $('positions').querySelector('tbody');
   pb.innerHTML = me.positions.length ? me.positions.map((p) => `<tr><td class="num">${p.id}</td><td>${p.symbol}</td><td class="${p.isLong ? 'up' : 'down'}">${p.isLong ? '多' : '空'}</td><td class="num">$${fmt(p.marginUsd)} × ${p.leverage}x</td><td class="num">${fmt(p.entry, p.symbol === 'BTC' ? 1 : 2)}</td><td class="num">${fmt(p.price, p.symbol === 'BTC' ? 1 : 2)}</td><td class="num ${p.changePct >= 0 ? 'up' : 'down'}">${p.changePct === null ? '—' : (p.changePct >= 0 ? '+' : '') + p.changePct.toFixed(3) + '%'}</td><td class="num">${fmt(p.bust, p.symbol === 'BTC' ? 1 : 2)}</td></tr>`).join('') : '<tr><td colspan="8" class="muted">没有仓位</td></tr>';
@@ -404,7 +410,7 @@ async function refreshMe() {
 }
 async function loadRounds() {
   try { const { rounds } = await api('/api/rounds?limit=30', null, true); const tb = $('rounds').querySelector('tbody');
-    tb.innerHTML = rounds.length ? rounds.map((r) => `<tr><td class="num">${new Date(r.created_at).toLocaleString('zh-CN', { hour12: false })}</td><td>${r.market}</td><td class="num ${r.cost_usd > 0 ? 'down' : 'up'}">$${fmt(r.cost_usd)}</td><td class="num">${fmt(r.paper, 0)}</td><td class="num">${r.paper > 0 ? '$' + fmt((r.cost_usd / r.paper) * 1000) : '—'}</td><td class="num">${r.fee_usd >= 0 ? '' : '退 '}$${fmt(Math.abs(r.fee_usd), 3)}</td></tr>`).join('') : '<tr><td colspan="6" class="muted">还没有</td></tr>'; } catch {}
+    tb.innerHTML = rounds.length ? rounds.map((r) => `<tr><td class="num">${new Date(r.created_at).toLocaleString('zh-CN', { hour12: false })}</td><td>${r.market}</td><td class="num ${r.cost_usd > 0 ? 'down' : 'up'}">$${fmt(r.cost_usd)}</td><td class="num">${fmt(r.paper, 0)}</td><td class="num">${r.paper > 0 ? '$' + fmt((r.cost_usd / r.paper) * 1000) : '—'}</td><td class="num fee-col${FREE ? ' hide' : ''}">${r.fee_usd >= 0 ? '' : '退 '}$${fmt(Math.abs(r.fee_usd), 3)}</td></tr>`).join('') : '<tr><td colspan="6" class="muted">还没有</td></tr>'; } catch {}
 }
 async function loadEvents() {
   try { const { events } = await api('/api/events?after=' + lastEventId + '&limit=100', null, true); if (!events.length) return;
@@ -416,7 +422,7 @@ function stopPolling() { clearInterval(pollTimer); pollTimer = null; }
 function refreshButtons() {
   const ack = $('ack').checked, logged = !!token && !!me;
   const sessOk = me?.session?.state === 'active', st = me?.strategy, running = st && ['running', 'stopping', 'stopping_soft'].includes(st.status);
-  const need = lastEst?.feeRequired ?? (market?.fee.minUsdc ?? 1), feeOk = (me?.fee?.balance ?? 0) + 1e-9 >= need;
+  const need = lastEst?.feeRequired ?? (market?.fee.minUsdc ?? 1), feeOk = FREE || (me?.fee?.balance ?? 0) + 1e-9 >= need;
   $('btn-connect').textContent = logged ? short(account) : '连接钱包'; $('btn-connect').disabled = logged;
   $('btn-connect2').disabled = !ack || logged; $('btn-connect2').textContent = logged ? '已登录 ' + short(account) : '连接钱包';
   $('s-connect').classList.toggle('done', logged);

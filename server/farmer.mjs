@@ -73,7 +73,7 @@ export class Farmer {
     const budget = st.budget_usd * (S.dip && this.params().dipBoost ? 3 : 1);
     if (st.spent_usd >= budget) return { reason: `预算已用完 $${n2(st.spent_usd)} / $${n2(st.budget_usd)}`, done: 'done_budget' };
     const fee = DB.feeAccount(this.wallet);
-    if (fee.balance <= 0) return { reason: `服务费余额 $${n2(fee.balance)} 不足，请预付`, done: 'halted_fee' };
+    if (CFG.feeBps > 0 && fee.balance <= 0) return { reason: `服务费余额 $${n2(fee.balance)} 不足，请预付`, done: 'halted_fee' };
     const params = this.params();
     const syms = params.market === 'auto' ? Object.keys(S.insts) : [params.market];
     const prices = {};
@@ -145,7 +145,7 @@ export class Farmer {
     DB.addRound(this.wallet, { market: sym, ids, cost, paper, fee: fee.delta, detail: detail.join('; ') });
     const after = this.strategy();
     this.log('info', 'round', `第 ${after.rounds} 轮完成(${sym}): 成本 $${n2(cost)} 铸 ${paper.toFixed(0)} PAPER，服务费 ${fee.delta >= 0 ? '+' : ''}$${n2(fee.delta)}（余额 $${n2(fee.balance)}），累计 $${n2(after.spent_usd)} / ${after.paper.toFixed(0)} PAPER`, { cost, paper, detail, fee });
-    if (fee.balance < 0) { this.log('warn', 'fee', `服务费余额 $${n2(fee.balance)} 为负：全平并暂停，预付后可继续`); await this.closeAll('fee-exhausted'); DB.setStrategyStatus(this.wallet, 'halted_fee', '服务费余额不足'); }
+    if (CFG.feeBps > 0 && fee.balance < 0) { this.log('warn', 'fee', `服务费余额 $${n2(fee.balance)} 为负：全平并暂停，预付后可继续`); await this.closeAll('fee-exhausted'); DB.setStrategyStatus(this.wallet, 'halted_fee', '服务费余额不足'); }
   }
 
   // ---------- 主循环 ----------

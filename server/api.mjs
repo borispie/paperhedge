@@ -111,7 +111,7 @@ route('GET', '/api/market', async () => {
     asOf: S.protoAt, mintRate: mintRate(), directPerPaper: directPerPaper(mintRate()), halt: S.halt, dip: S.dip,
     lpUsd: wadToNumber(S.summary.balances.lp), queueUsd: wadToNumber(S.summary.balances.queue), supply: wadToNumber(S.summary.paper.supply), staked: wadToNumber(S.summary.paper.staked),
     dividend24hPer1000: div?.perThousand ?? null,
-    fee: { bps: CFG.feeBps, pct: CFG.feeBps / 100, minUsdc: CFG.feeMinUsdc, treasury: CFG.treasury, token: MAINNET.contracts.usdc, decimals: 6, chainId: MAINNET.chainId },
+    fee: { bps: CFG.feeBps, pct: CFG.feeBps / 100, free: CFG.feeBps <= 0, minUsdc: CFG.feeMinUsdc, treasury: CFG.treasury, token: MAINNET.contracts.usdc, decimals: 6, chainId: MAINNET.chainId },
     limits: { minMarginUsd: wadToNumber(S.trading.minimumTradeSizeRaw), minNotionalUsd: wadToNumber(S.trading.minimumOpenNotionalRaw), maxBudgetUsd: CFG.maxBudgetUsd, minStakePaper: wadToNumber(S.trading.intake.minimumPaperStakeRaw) || 1000, sessionTtlDays: CFG.sessionTtlDays },
     presets: CFG.presets, defaults: DEFAULT_PARAMS, emergencyFrac: CFG.emergencyFrac, instruments: inst,
   };

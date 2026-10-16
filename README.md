@@ -1,6 +1,6 @@
 # PaperHedge — 对冲挖 PAPER，服务器托管，开源
 
-线上：https://paperhedge.xyz · 白皮书（中/EN）：https://paperhedge.xyz/whitepaper.html · 安全说明：https://paperhedge.xyz/security.html · MIT 协议
+作者 X：https://x.com/siyiluo2 · 线上：https://paperhedge.xyz · 白皮书（中/EN）：https://paperhedge.xyz/whitepaper.html · 安全说明：https://paperhedge.xyz/security.html · MIT 协议
 
 **权限边界**：用户只签 Papertrade 的 `RegisterSessionKey`，授权一把服务器生成的交易密钥；密钥只能开仓/平仓，不能提现、转账、质押。钱包私钥从不经过本站。交易逻辑在 `server/farmer.mjs`，签名流程在 `server/api.mjs`，自己看。
 
@@ -10,7 +10,7 @@
 - `web/index.html`：页面（纯静态，api 直接托管，也可以丢到 Cloudflare Pages）。
 - 数据：SQLite 文件 `data/farm.db`（Node 22.5+ 自带，不用装东西）。
 
-服务费：**策略净已实现亏损的 3%**（`.env` 里 `FEE_BPS=300`），预付、每次最低 1 USDC。机制和 Barker 一样：开跑前预付 预算 × 3%，每轮平仓按本期净亏损结算，赢的退、亏的补，余额 ≤ 0 全平停止。用户把 USDC 转到 `TREASURY` 地址，网页自动登记交易哈希。
+服务费：`.env` 里 `FEE_BPS=0` 就是免费模式（线上现在就是免费，预付那一步整个隐藏）。设成 300 就是**策略净已实现亏损的 3%**，预付、每次最低 1 USDC。机制和 Barker 一样：开跑前预付 预算 × 3%，每轮平仓按本期净亏损结算，赢的退、亏的补，余额 ≤ 0 全平停止。用户把 USDC 转到 `TREASURY` 地址，网页自动登记交易哈希。
 
 ## 一、本地先跑通（Mac，用你自己的账户）
 ```bash
