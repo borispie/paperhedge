@@ -280,7 +280,7 @@ const server = createServer(async (req, res) => {
     rateLimit(req.headers['x-forwarded-for']?.split(',')[0]?.trim() || req.socket.remoteAddress);
     if (req.method === 'GET' && !url.pathname.startsWith('/api/')) {   // 静态页
       const file = url.pathname === '/' || url.pathname === '/index.html' ? 'index.html' : url.pathname.slice(1).replace(/\.\./g, '');
-      try { const body = readFileSync(resolve(WEB_DIR, file)); res.writeHead(200, { 'content-type': file.endsWith('.html') ? 'text/html; charset=utf-8' : file.endsWith('.js') ? 'text/javascript' : file.endsWith('.css') ? 'text/css' : 'application/octet-stream', 'cache-control': 'no-cache' }); return res.end(body); }
+      try { const body = readFileSync(resolve(WEB_DIR, file)); res.writeHead(200, { 'content-type': file.endsWith('.html') ? 'text/html; charset=utf-8' : file.endsWith('.js') ? 'text/javascript' : file.endsWith('.css') ? 'text/css' : file.endsWith('.png') ? 'image/png' : file.endsWith('.svg') ? 'image/svg+xml' : file.endsWith('.ico') ? 'image/x-icon' : 'application/octet-stream', 'cache-control': 'no-cache' }); return res.end(body); }
       catch { throw new HttpError(404, 'not found'); }
     }
     const r = routes.find((x) => x.method === req.method && x.path === url.pathname);
