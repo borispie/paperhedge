@@ -204,8 +204,10 @@ export class Farmer {
     if (d.reason) {
       if (d.done) { DB.setStrategyStatus(this.wallet, d.done, d.reason); this.log('info', 'stop', '策略结束: ' + d.reason); this.running = false; return; }
       if (d.reason !== this.lastReason || now() - this.lastLogAt > 600_000) { this.lastLogAt = now(); this.log('info', 'wait', '不开新对子: ' + d.reason); }
+      if (d.reason !== this.lastReason) DB.setStrategyStatus(this.wallet, st.status, '等开仓：' + d.reason); // 让页面顶部直接看到原因
       this.lastReason = d.reason; await sleep(16000); return;
     }
+    if (this.lastReason !== null || st.note) DB.setStrategyStatus(this.wallet, st.status, null);
     this.lastReason = null;
     const c = d.choice, second = c.first === 'long' ? 'short' : 'long';
     this.roundState = 'opening'; this.equityBefore = this.equity();

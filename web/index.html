@@ -6,7 +6,14 @@
 <title>PaperHedge · 对冲挖 PAPER</title>
 <meta name="description" content="在 Papertrade 上多空对冲挖 PAPER：同样的钱多拿 6 倍 PAPER，服务器 24 小时替你开平仓。开源、只授权开平仓、随时撤销。">
 <meta property="og:title" content="PaperHedge · 同样的钱，多拿 6 倍 PAPER">
-<meta property="og:description" content="多空对冲挖 Papertrade 的 PAPER，服务器托管，按净亏损收 3%。开源可查。">
+<meta property="og:description" content="多空对冲挖 Papertrade 的 PAPER，服务器 24 小时托管，现在免费。开源、只授权开平仓、随时撤销。">
+<meta property="og:type" content="website">
+<meta property="og:url" content="https://paperhedge.xyz/">
+<meta property="og:image" content="https://paperhedge.xyz/og.png">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:site" content="@siyiluo2">
+<meta name="twitter:creator" content="@siyiluo2">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='7' fill='%231c1a17'/%3E%3Cpath d='M9 23V9h7.5a4.5 4.5 0 0 1 0 9H13' fill='none' stroke='%23f6f2ea' stroke-width='3' stroke-linecap='round'/%3E%3Cpath d='M18 14l5 9M23 14l-5 9' stroke='%2334a853' stroke-width='3' stroke-linecap='round'/%3E%3C/svg%3E">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=Noto+Sans+SC:wght@400;500;700&display=swap" rel="stylesheet">
 <style>
@@ -100,6 +107,7 @@
   .tag{display:inline-block;padding:1px 9px;border-radius:10px;font-size:12px;border:1px solid var(--line);color:var(--ink-2)}
   .tag.on{border-color:var(--green);color:var(--green);background:var(--green-bg)}
   .tag.off{border-color:var(--red);color:var(--red);background:var(--red-bg)}
+  .tag.wait{border-color:var(--amber);color:var(--amber);background:var(--amber-bg)}
   /* 信任 */
   .trust{display:grid;grid-template-columns:1fr 1fr;gap:12px 20px}
   @media (max-width:640px){.trust{grid-template-columns:1fr}}
@@ -194,6 +202,7 @@
 
   <section class="block card hide" id="dash">
     <h2>我的账户 <span class="tag" id="strat-tag">未运行</span></h2>
+    <div class="notice hide" id="d-note"></div>
     <div class="row">
       <div>
         <table>
@@ -211,7 +220,6 @@
           <div class="box"><div class="k">今天换到</div><div class="v" id="b-paper">—</div><div class="s" id="b-paper-s">&nbsp;</div></div>
         </div>
         <div class="muted small" style="margin-top:10px" id="d-strat">—</div>
-        <div class="notice hide" id="d-note"></div>
       </div>
     </div>
     <h2 style="margin-top:18px">持仓</h2>
@@ -412,9 +420,12 @@ async function refreshMe() {
   $('d-fee').textContent = FREE ? (me.fee.balance > 0 ? `$${fmt(me.fee.balance)}，谢谢` : '还没有，不用也行') : `$${fmt(me.fee.balance)}（本期已收 $${fmt(me.fee.period_charged)}）`;
   const st = me.strategy, tag = $('strat-tag');
   const label = { running: '运行中', stopping: '正在全平', stopping_soft: '本轮平完停', stopped: '已停止', halted_fee: '服务费不足，已暂停', halted_session: '授权失效，已暂停', done_budget: '预算烧完' }[st?.status] || '未运行';
-  tag.textContent = label; tag.className = 'tag ' + (st?.status === 'running' ? 'on' : (st && /halted/.test(st.status) ? 'off' : ''));
+  const waiting = st?.status === 'running' && /^等开仓/.test(st.note || '');
+  tag.textContent = waiting ? '运行中 · 等开仓' : label; tag.className = 'tag ' + (st?.status === 'running' ? (waiting ? 'wait' : 'on') : (st && /halted/.test(st.status) ? 'off' : ''));
   $('d-strat').textContent = st ? `预算 $${fmt(st.budget_usd)}，已花 $${fmt(st.spent_usd)}，换 ${fmt(st.paper, 0)} PAPER，${st.rounds} 轮。参数：${st.params.market === 'auto' ? '自动选币' : st.params.market}，杠杆 ${st.params.leverage}，目标 ±${(st.params.targetPct * 100).toFixed(2)}%` : '还没启动过策略。';
-  $('d-note').classList.toggle('hide', !st?.note); $('d-note').textContent = st?.note || '';
+  let note = st?.note || '';
+  if (/低于最小保证金/.test(note)) note += ' — Papertrade 每个仓位最少 $10，两腿要 $20 多一点。往 Papertrade 账户再充几块 USDC，它会自己开。';
+  $('d-note').classList.toggle('hide', !note); $('d-note').textContent = note;
   $('btn-resume').classList.toggle('hide', !st || !['halted_fee', 'halted_session', 'stopped', 'done_budget'].includes(st.status));
   const s24 = me.stats24h; $('b-cost').textContent = '$' + fmt(s24.cost); $('b-cost-s').textContent = `${s24.n} 轮${FREE ? '' : '，服务费 $' + fmt(s24.fee)}`;
   $('b-paper').textContent = fmt(s24.paper, 0); $('b-paper-s').textContent = `PAPER · 累计 ${fmt(me.statsAll.paper, 0)} / $${fmt(me.statsAll.cost)}`;
