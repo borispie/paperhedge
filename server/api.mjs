@@ -127,7 +127,7 @@ route('POST', '/api/estimate', async (b) => {
   const avail = Math.max(0, Number(b.avail) || 0);
   const prices = {};
   for (const sym of Object.keys(S.insts)) prices[sym] = await getPrice(sym);
-  const { best, list } = candidates({ insts: S.insts, trading: S.trading, prices, avail, params, rate: mintRate(), feeBps: CFG.feeBps, emergencyFrac: CFG.emergencyFrac, minHeadroomUsd: CFG.minHeadroomUsd, headroom: headroomUsd });
+  const { best, list } = candidates({ insts: S.insts, trading: S.trading, prices, avail, params, rate: mintRate(), feeBps: CFG.feeBps, emergencyFrac: CFG.emergencyFrac, minBustPct: CFG.minBustPct, minHeadroomUsd: CFG.minHeadroomUsd, headroom: headroomUsd });
   const budget = Math.max(0, Number(b.budgetUsd) || 0);
   return jsonSafe({ params, avail, mintRate: mintRate(), directPerPaper: directPerPaper(mintRate()), best: best ? { sym: best.sym, price: best.price, plan: best.plan, est: best.est, first: best.first } : null,
     list: list.map((c) => (c.est ? { sym: c.sym, price: c.price, plan: c.plan, est: c.est } : { sym: c.sym, why: c.why })),

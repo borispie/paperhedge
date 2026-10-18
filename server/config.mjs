@@ -28,6 +28,8 @@ export const CFG = {
   intentTimeoutSec: num('INTENT_TIMEOUT_SEC', 180),
   cooldownSec: num('COOLDOWN_SEC', 20),
   emergencyFrac: num('EMERGENCY_FRAC', 0.6),
+  minBustPct: num('MIN_BUST_PCT', 0.006),   // 杠杆安全上限：强平距离至少 0.6%（≈155x）
+
   minHeadroomUsd: num('MIN_HEADROOM_USD', 5000),
   dipLpThresholdUsd: num('DIP_LP_THRESHOLD_USD', 2_000_000),
   maxBudgetUsd: num('MAX_BUDGET_USD', 20000),

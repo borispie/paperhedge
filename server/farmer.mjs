@@ -20,7 +20,7 @@ export class Farmer {
     this.wallet = wallet.toLowerCase();
     this.W = null; this.trader = null; this.stopStream = null;
     this.running = false; this.loopPromise = null;
-    this.roundState = 'idle'; this.pairIds = null; this.equityBefore = null; this.lastReason = null; this.lastTick = now(); this.lastLogAt = 0;
+    this.roundState = 'idle'; this.pairIds = null; this.equityBefore = null; this.lastReason = null; this.unsettled = null; this.lastTick = now(); this.lastLogAt = 0;
     this.streamStatus = 'init';
   }
 
@@ -78,7 +78,7 @@ export class Farmer {
     const syms = params.market === 'auto' ? Object.keys(S.insts) : [params.market];
     const prices = {};
     for (const sym of syms) if (S.insts[sym]) prices[sym] = await getPrice(sym);
-    const { best, list } = candidates({ insts: S.insts, trading: S.trading, prices, avail: this.avail(), params, rate: mintRate(), feeBps: CFG.feeBps, emergencyFrac: CFG.emergencyFrac, minHeadroomUsd: CFG.minHeadroomUsd, headroom: headroomUsd });
+    const { best, list } = candidates({ insts: S.insts, trading: S.trading, prices, avail: this.avail(), params, rate: mintRate(), feeBps: CFG.feeBps, emergencyFrac: CFG.emergencyFrac, minBustPct: CFG.minBustPct, minHeadroomUsd: CFG.minHeadroomUsd, headroom: headroomUsd });
     if (!best) return { reason: '没有能开的币: ' + list.map((c) => `${c.sym} ${c.why}`).join('; ') };
     return { choice: best };
   }
@@ -90,8 +90,9 @@ export class Farmer {
     const count = () => this.positions().filter((p) => p.instrumentId === inst.id && p.isLong === (side === 'long')).length;
     const before = count();
     let margin = c.plan.m;
-    for (let attempt = 0; attempt < 2; attempt++) {
+    for (let attempt = 0; attempt < 4; attempt++) {
       try {
+        if (attempt) price = await getPrice(inst.symbol);
         const sent = await this.trader.openPosition({ market: inst.symbol, side, marginUsd: String(margin), leverage: c.plan.L, markPriceRaw: priceToRaw(price, inst.priceScale) });
         this.log('info', 'open', `${inst.symbol} 开${side === 'long' ? '多' : '空'} $${margin}×${c.plan.L}x 已提交 ${sent.receipt.intentId.slice(0, 12)}… ${sent.receipt.state}`);
         if (await this.waitFor(() => count() > before, CFG.intentTimeoutSec * 1000, `开${side}`)) return true;
@@ -100,6 +101,8 @@ export class Farmer {
         return count() > before;
       } catch (e) {
         if (e instanceof PapertradeApiError && e.reason === 'belowMinimumNotional' && attempt === 0) { margin = margin + 1; continue; }
+        const oiCap = /open ?interest|cap/i.test(String(e.message) + String(e.reason ?? ''));
+        if (oiCap && attempt < 3) { this.log('warn', 'open', `开${side}被 OI 上限挡住，5 秒后重试 (${attempt + 1}/3): ${e.message}`); await sleep(5000); continue; }
         this.log('error', 'open', `开${side}失败: ${e.message} ${e.reason ?? ''}`);
         return false;
       }
@@ -112,18 +115,27 @@ export class Farmer {
     const live = ids.filter((id) => open.has(String(id))), gone = ids.filter((id) => !open.has(String(id)));
     if (gone.length) this.log('warn', 'close', `这些仓位已经不在了(可能被强平): ${gone.join(',')}`);
     if (!live.length) return true;
-    try {
-      const sent = await this.trader.closePositions(live);
-      this.log('info', 'close', `平仓已提交 (${label}) ${sent.map((s) => s.receipt.intentId.slice(0, 12)).join(',')}…`);
-    } catch (e) {
-      this.log('error', 'close', `平仓提交失败: ${e.message} ${e.reason ?? ''}`);
-      if (e.reason === 'noOpenPositions') { await this.resync(); return !this.positions().some((p) => live.map(String).includes(String(p.positionId))); }
-      return false;
-    }
     const idSet = new Set(live.map(String));
-    const ok = await this.waitFor(() => !this.positions().some((p) => idSet.has(String(p.positionId))), CFG.intentTimeoutSec * 1000, '平仓');
-    if (!ok) await this.resync();
-    return ok || !this.positions().some((p) => idSet.has(String(p.positionId)));
+    const stillOpen = () => this.positions().some((p) => idSet.has(String(p.positionId)));
+    // 平仓意图可能排队很久甚至丢掉；没平掉就重新提交，最多 3 次，别让单腿裸奔
+    for (let attempt = 0; attempt < 3; attempt++) {
+      const pendingClose = this.pendingOps().some((o) => o.action === 'closePositions');
+      if (!pendingClose || attempt === 0) {
+        try {
+          const sent = await this.trader.closePositions(live);
+          this.log('info', 'close', `平仓已提交 (${label}${attempt ? ` 第${attempt + 1}次` : ''}) ${sent.map((s) => s.receipt.intentId.slice(0, 12)).join(',')}…`);
+        } catch (e) {
+          this.log('error', 'close', `平仓提交失败: ${e.message} ${e.reason ?? ''}`);
+          await this.resync();
+          if (e.reason === 'noOpenPositions' || !stillOpen()) return !stillOpen();
+          await sleep(5000); continue;
+        }
+      } else this.log('warn', 'close', '上一笔平仓还在排队，继续等');
+      const ok = await this.waitFor(() => !stillOpen(), CFG.intentTimeoutSec * 1000, '平仓');
+      await this.resync();
+      if (ok || !stillOpen()) return true;
+    }
+    return !stillOpen();
   }
   async closeAll(label = 'close-all') { await this.resync(); const ids = this.positions().map((p) => p.positionId); return ids.length ? this.closeIds(ids, label) : true; }
 
@@ -163,6 +175,12 @@ export class Farmer {
     const st = this.strategy();
     if (!st) { this.running = false; return; }
     const pos = this.positions();
+    if (this.unsettled && !pos.some((p) => this.unsettled.ids.map(String).includes(String(p.positionId)))) {
+      // 之前没平掉的单腿已经不在了（多半是被强平）：把它的亏损和铸出的 PAPER 记进账
+      const u = this.unsettled; this.unsettled = null;
+      this.log('warn', 'single', `单腿 #${u.ids.join(',')} 已经没了（可能被强平），记一笔`);
+      await this.recordRound(u.ids, NaN, u.sym);
+    }
     if (st.status === 'stopping') { this.log('info', 'stop', '收到停止指令：全平'); await this.closeAll('stop'); DB.setStrategyStatus(this.wallet, 'stopped', '已手动停止并全平'); this.running = false; return; }
 
     if (pos.length) {
@@ -190,8 +208,9 @@ export class Farmer {
         } else if (now() - this.lastLogAt > 300_000) { this.lastLogAt = now(); this.log('debug', 'watch', `${sym} 盯盘 ${price} (上 ${n2(up)} 下 ${n2(down)})`); }
       } else if (this.roundState !== 'opening') {
         this.log('warn', 'single', `${sym} 只剩一条腿 #${pos[0].positionId}，马上平掉`);
-        const roundIds = [...new Set([...(this.pairIds ?? []), pos[0].positionId].map(String))];
-        if (await this.closeIds([pos[0].positionId], 'single-leg')) await this.recordRound(roundIds, NaN, sym);
+        const roundIds = [...new Set([...(this.pairIds ?? []), ...(this.unsettled?.ids ?? []), pos[0].positionId].map(String))];
+        if (await this.closeIds([pos[0].positionId], 'single-leg')) { await this.recordRound(roundIds, NaN, sym); this.unsettled = null; }
+        else this.unsettled = { ids: roundIds, sym };
         this.roundState = 'idle'; this.pairIds = null; this.equityBefore = null;
       }
       return;
@@ -215,9 +234,12 @@ export class Farmer {
     if (!(await this.openLeg(c, c.first, c.price))) { this.log('warn', 'open', '第一条腿没开成，这轮放弃'); this.roundState = 'idle'; await sleep(30000); return; }
     if (!(await this.openLeg(c, second, await getPrice(c.sym)))) {
       this.log('warn', 'open', '第二条腿没开成，马上平第一条');
-      const solo = this.positions();
-      if (solo.length) { await this.closeIds(solo.map((p) => p.positionId), 'leg2-failed'); await this.recordRound(solo.map((p) => p.positionId), this.equityBefore, c.sym); }
-      this.roundState = 'idle'; this.equityBefore = null; await sleep(60000); return;
+      const solo = this.positions(), soloIds = solo.map((p) => p.positionId);
+      if (solo.length) {
+        if (await this.closeIds(soloIds, 'leg2-failed')) await this.recordRound(soloIds, this.equityBefore, c.sym);
+        else { this.log('error', 'close', `单腿 #${soloIds.join(',')} 还没平掉，下一轮继续平`); this.unsettled = { ids: soloIds, sym: c.sym }; }
+      }
+      this.roundState = 'idle'; this.equityBefore = null; await sleep(10000); return;
     }
     this.roundState = 'paired-pending';
   }

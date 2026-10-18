@@ -14,7 +14,7 @@ export function normalizeParams(p = {}) {
 }
 
 // 给定可用余额 + 市场 + 用户参数：每边保证金 m、杠杆 L、目标走动 target（≤ 紧急线）
-export function planFor({ inst, trading, avail, params, emergencyFrac = 0.6 }) {
+export function planFor({ inst, trading, avail, params, emergencyFrac = 0.6, minBustPct = 0.006 }) {
   const minNotional = wadToNumber(trading.minimumOpenNotionalRaw), minMargin = wadToNumber(trading.minimumTradeSizeRaw);
   const half = Math.floor(((avail - 1) / 2) * 100) / 100;
   let m = params.marginPerLeg > 0 ? Math.min(params.marginPerLeg, half) : half;
@@ -27,6 +27,9 @@ export function planFor({ inst, trading, avail, params, emergencyFrac = 0.6 }) {
     const needBust = (params.targetPct + 0.0005) / emergencyFrac;      // 目标 + 0.05% 余量要落在紧急线以内
     want = Math.floor(1 / (needBust + buf) / 5) * 5;
   } else want = params.leverage;
+  // 安全上限：强平距离至少 minBustPct（relayer 排队慢时单腿裸奔几分钟也不至于爆）
+  const capL = Math.floor(1 / (minBustPct + buf) / 5) * 5;
+  if (want > capL) want = capL;
   if (want > L) L = Math.min(want, inst.maxLeverage);
   if (L > inst.maxLeverage) return { err: `每边 $${m} 要 ${L}x 才够最小名义 $${minNotional}，超过 ${inst.symbol} 最高 ${inst.maxLeverage}x` };
   if (m * L > wadToNumber(inst.maxPositionNotionalRaw)) return { err: `名义 $${(m * L).toFixed(0)} 超过单仓上限` };
@@ -48,7 +51,7 @@ export function roundEstimate({ inst, price, plan, rate, feeBps = 0 }) {
 }
 
 // 候选市场：开得了、OI 两边余量够，按每 1000 PAPER 成本排序
-export function candidates({ insts, trading, prices, avail, params, rate, feeBps = 0, emergencyFrac = 0.6, minHeadroomUsd = 5000, headroom }) {
+export function candidates({ insts, trading, prices, avail, params, rate, feeBps = 0, emergencyFrac = 0.6, minBustPct = 0.006, minHeadroomUsd = 5000, headroom }) {
   const list = [];
   const syms = params.market === 'auto' ? Object.keys(insts) : [params.market];
   for (const sym of syms) {
@@ -57,7 +60,7 @@ export function candidates({ insts, trading, prices, avail, params, rate, feeBps
     if (!inst.openable) { list.push({ sym, why: '不接受开仓' }); continue; }
     const price = prices[sym];
     if (!price) { list.push({ sym, why: '没有价格' }); continue; }
-    const plan = planFor({ inst, trading, avail, params, emergencyFrac });
+    const plan = planFor({ inst, trading, avail, params, emergencyFrac, minBustPct });
     if (plan.err) { list.push({ sym, why: plan.err }); continue; }
     const need = Math.max(minHeadroomUsd, plan.notional * 3);
     const hl = headroom(inst, 'long', price), hs = headroom(inst, 'short', price);
