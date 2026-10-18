@@ -10,6 +10,7 @@ export function normalizeParams(p = {}) {
   out.leverage = out.leverage === 'max' ? 'max' : Math.max(1, Math.floor(Number(out.leverage) || 0)) || 'max';
   out.targetPct = Math.min(0.05, Math.max(0.001, Number(out.targetPct) || 0.005));
   out.dipBoost = Boolean(out.dipBoost);
+  out.stopOnEmpty = Boolean(out.stopOnEmpty); // 钱用完就停，不等充值
   return out;
 }
 

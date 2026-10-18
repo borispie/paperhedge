@@ -222,6 +222,8 @@ export class Farmer {
     const d = await this.decide();
     if (d.reason) {
       if (d.done) { DB.setStrategyStatus(this.wallet, d.done, d.reason); this.log('info', 'stop', '策略结束: ' + d.reason); this.running = false; return; }
+      // 用户要求：钱用完就停，不等充值（params.stopOnEmpty）
+      if (this.params().stopOnEmpty && /低于最小保证金/.test(d.reason)) { DB.setStrategyStatus(this.wallet, 'stopped', '资金用完，按要求停止：' + d.reason); this.log('info', 'stop', '资金用完，按要求停止，不再等充值'); this.running = false; return; }
       if (d.reason !== this.lastReason || now() - this.lastLogAt > 600_000) { this.lastLogAt = now(); this.log('info', 'wait', '不开新对子: ' + d.reason); }
       if (d.reason !== this.lastReason) DB.setStrategyStatus(this.wallet, st.status, '等开仓：' + d.reason); // 让页面顶部直接看到原因
       this.lastReason = d.reason; await sleep(16000); return;
